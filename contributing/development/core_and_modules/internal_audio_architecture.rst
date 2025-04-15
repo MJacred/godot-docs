@@ -53,6 +53,11 @@ Supported
 
    - OpenSL ES
 
+- Web
+
+   - Web
+   - AudioWorklet (`in a multi-threaded, and for HTTPS only <https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet>`__)
+
 
 .. _doc_internal_audio_architecture_codecs:
 
@@ -161,7 +166,8 @@ Except ALSA, XAudio2, and OpenSL ES. These enforce stereo speaker mode and suppo
 
 **Bus**
 Godot as an internal bus logic to separately control volume and audio effects applied to audio streams.
-All busses eventually feed into the master bus, which is output to the audio output device.
+All busses eventually feed into the master bus, which is output via the current audio driver
+to the selected audio output device.
 
 
 Seeking / Looping
@@ -199,7 +205,17 @@ Core audio classes architecture
 3D audio techniques
 -------------------
 
-SPCAP, Camera3D doppler tracking and the audio panning properties here
+Speaker-Placement Correction Amplitude Panning (SPCAP)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The implementation is based on
+"A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations"
+by Ramy Sadek and Chris Kyriakakis (2004).
+
+
+Notes
+* Camera3D doppler tracking
+* the audio panning properties
 
 
 .. _doc_internal_audio_architecture_nodes:
@@ -209,6 +225,14 @@ Nodes
 
 AudioStreamPlayer
 ^^^^^^^^^^^^^^^^^
+
+* plays audio files of various audio codecs (Ogg Vorbis, MP3, WAV)
+* these files can be accessed in Godot after configuring them in an AudioStream.
+* based on the file's audio codec, AudioStream has internal sub-classes. one for each codec.
+* And each sub-class has its own sub-class of AudioStreamPlaybackResampled which holds the current playback data.
+
+The AudioStreamPlayer is non-positional. Therfore, AudioStreamPlayer3D and AudioStreamPlayer2D 
+allow spatial positioning and certain effects based on distance to the main camera.
 
 
 AudioStreamPolyphonic
@@ -228,7 +252,8 @@ Notes
 Output devices
 ^^^^^^^^^^^^^^
 
-Currently, Godot only allows one output device that can be set globally in the :ref:`AudioServer<class_AudioServer_property_output_device>`.
+Currently, Godot only allows one output device that can be set globally in the
+:ref:`AudioServer<class_AudioServer_property_output_device>`.
 
 .. warning::
 
